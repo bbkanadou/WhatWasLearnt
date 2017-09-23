@@ -7,7 +7,7 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 import time
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation, Flatten
+from keras.layers import Dense, Dropout, Activation, Flatten, Reshape
 from keras.layers.convolutional import Conv2D
 #from keras.layers.convolutional import Conv2D
 from keras.layers.pooling import MaxPooling2D
@@ -21,17 +21,20 @@ from keras.engine.topology import Layer
 class Proutlayer(Layer):
 
     def __init__(self, **kwargs):
-        self.output_dim = None
+        self.output_dim = 1
         super(Proutlayer, self).__init__(**kwargs)
 
     def build(self, input_shape):
         # Create a trainable weight variable for this layer.
-
-        self.output_dim = input_shape
+	print "ok1"
+        self.output_dim = (50*50*3,)
+	print "ok1bis"
         self.kernel = self.add_weight(name='kernel', 
-                                      shape=(input_shape),
-                                      initializer='ones',
+                                      shape=((50*50*3,)),
+                                      initializer='Ones',
                                       trainable=False)
+	print "ok2"
+	print self.kernel
         super(Proutlayer, self).build(input_shape)  # Be sure to call this somewhere!
 
     def call(self, x):
@@ -161,10 +164,12 @@ model = Sequential()
 # input: 100x100 images with 3 channels -> (3, 100, 100) tensors.
 # this applies 32 convolution filters of size 3x3 each.
 #model.add(Convolution2D(32, 3, 3, border_mode='valid', input_shape=(height_input, width_input,depth)))
-print height_input*width_input*depth
+model.add(Flatten(input_shape=(height_input, width_input,depth)))
 model.add(Proutlayer(input_shape=(height_input, width_input,depth)))
+model.add(Reshape((height_input, width_input,depth)))
 
-model.add(Conv2D(16, (3,3),input_shape=(height_input, width_input,depth), strides=(1, 1), padding='valid', data_format="channels_last", activation='relu'))
+#input_shape=(height_input, width_input,depth), data_format="channels_last",
+model.add(Conv2D(16, (3,3),strides=(1, 1), padding='valid',  activation='relu'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 
 model.add(Conv2D(8, (1,1),strides=(1, 1), padding='valid', activation='relu'))
@@ -183,7 +188,7 @@ model.add(Activation('softmax'))
 
 adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.00001)
 model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['accuracy'])
-
+print "bonjou"
 model.fit(X_train, Y_train, validation_split = val_split, batch_size=32, epochs=2000)
 #server.launch(model)
 
