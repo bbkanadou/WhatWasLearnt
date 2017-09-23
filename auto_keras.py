@@ -40,6 +40,9 @@ class Proutlayer(Layer):
     def call(self, x):
         return x*self.kernel
 
+    def trainable(self, talebool):
+	self.trainable=talebool
+
     def compute_output_shape(self, input_shape):
         return (input_shape[0], self.output_dim)
 
@@ -158,6 +161,8 @@ except:
 X_train, test_set, Y_train, y_test = create_train_test(x_set, y_set, train_ratio)
 print test_set.shape, y_test.shape
 
+X_train, test_set = X_train/255., test_set/255.
+
 print X_train.shape
 print Y_train.shape
 model = Sequential()
@@ -188,8 +193,8 @@ model.add(Activation('softmax'))
 
 adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.00001)
 model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['accuracy'])
-print "bonjou"
-model.fit(X_train, Y_train, validation_split = val_split, batch_size=32, epochs=2000)
+
+model.fit(X_train, Y_train, validation_split = val_split, batch_size=32, epochs=100)
 #server.launch(model)
 
-#model.save('my_model.h5')
+model.save('my_model.h5')
