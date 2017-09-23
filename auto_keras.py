@@ -171,6 +171,7 @@ model = Sequential()
 #model.add(Convolution2D(32, 3, 3, border_mode='valid', input_shape=(height_input, width_input,depth)))
 model.add(Flatten(input_shape=(height_input, width_input,depth)))
 model.add(Proutlayer(input_shape=(height_input, width_input,depth)))
+model.add(Activation('relu'))
 model.add(Reshape((height_input, width_input,depth)))
 
 #input_shape=(height_input, width_input,depth), data_format="channels_last",

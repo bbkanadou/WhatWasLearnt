@@ -91,13 +91,22 @@ y2 = np.zeros((1,4))
 y2[0,1]= 1
 
 #
+print len(model.layers)
 model.layers[1].trainable = True
 for l in model.layers:
-	print l.trainable
-
+	print l.name
+"""
 sgd = SGD(lr=0.001)
 adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.00)
 model.compile(loss='mean_squared_error', optimizer=sgd, metrics=['accuracy'])
 model.fit(image2, y2, epochs=1000)
 model.save('my_model2.h5')
+"""
+model = load_model('my_model2.h5',{"Proutlayer":Proutlayer})
+get_3rd_layer_output = K.function([model.layers[0].input],[model.layers[3].output])
+layer_output = get_3rd_layer_output([image2])[0]
+layer_output = np.uint8(layer_output[0]*255)
+print layer_output.shape
+cv2.imwrite('ISDIZ.png',layer_output)
+
 
