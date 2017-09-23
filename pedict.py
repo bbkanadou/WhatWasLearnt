@@ -6,6 +6,7 @@ import cv2
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 
+
 height_input = 50 #height of the input image of the NN
 width_input = 50  #width  of the input image of the NN
 color = True   #True means images will be used as bgr, False as grayscale
@@ -43,3 +44,10 @@ image = np.expand_dims(image, axis=0)
 prediction = model.predict_on_batch(image)
 prediction = prediction.argmax()
 print classes[prediction]
+
+print type(model.layers)
+new_model = Sequential()
+new_model.add(LocallyConnected1D(64, 3, input_shape=(50, 50, 3)))
+new_model.add(model.layer[0])
+model.trainable = False
+print model.trainable

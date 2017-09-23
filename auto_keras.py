@@ -15,6 +15,31 @@ from keras.layers.pooling import MaxPooling2D
 from keras.optimizers import Adam
 from keras import regularizers
 import h5py
+from keras import backend as K
+from keras.engine.topology import Layer
+
+class Proutlayer(Layer):
+
+    def __init__(self, **kwargs):
+        self.output_dim = None
+        super(Proutlayer, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        # Create a trainable weight variable for this layer.
+
+        self.output_dim = input_shape
+        self.kernel = self.add_weight(name='kernel', 
+                                      shape=(input_shape),
+                                      initializer='ones',
+                                      trainable=False)
+        super(Proutlayer, self).build(input_shape)  # Be sure to call this somewhere!
+
+    def call(self, x):
+        return x*self.kernel
+
+    def compute_output_shape(self, input_shape):
+        return (input_shape[0], self.output_dim)
+
 height_input = 50 #height of the input image of the NN
 width_input = 50  #width  of the input image of the NN
 color = True   #True means images will be used as bgr, False as grayscale
@@ -136,6 +161,9 @@ model = Sequential()
 # input: 100x100 images with 3 channels -> (3, 100, 100) tensors.
 # this applies 32 convolution filters of size 3x3 each.
 #model.add(Convolution2D(32, 3, 3, border_mode='valid', input_shape=(height_input, width_input,depth)))
+print height_input*width_input*depth
+model.add(Proutlayer(input_shape=(height_input, width_input,depth)))
+
 model.add(Conv2D(16, (3,3),input_shape=(height_input, width_input,depth), strides=(1, 1), padding='valid', data_format="channels_last", activation='relu'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 
@@ -159,4 +187,4 @@ model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['accurac
 model.fit(X_train, Y_train, validation_split = val_split, batch_size=32, epochs=2000)
 #server.launch(model)
 
-model.save('my_model.h5')
+#model.save('my_model.h5')
