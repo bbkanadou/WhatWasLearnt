@@ -70,43 +70,74 @@ def load_image(height, width, picture, color):
 # returns a compiled model
 # identical to the previous one
 classes = np.load("variable_names.npy")
+for h in range(4):
+	for i in range(4):
+		for j in range(10):
+			model = load_model('my_model{}.h5'.format(j),{"Proutlayer":Proutlayer})
 
-model = load_model('my_model.h5',{"Proutlayer":Proutlayer})
+			"""
+			image = load_image(height_input, width_input, "0.png", color)
+			image = np.expand_dims(image, axis=0)
+			image = image / 255.
+			prediction = model.predict_on_batch(image)
+			prediction = prediction.argmax()
+			print classes[prediction]
+			"""
+
+			for l in model.layers:
+				l.trainable = False
+			model.layers[0].trainbale = True
+
+			image2 = np.ones((1,50,50,3))
+			y2 = np.zeros((1,4))
+			y2[0,1]= 1
+
+			#
+			print len(model.layers)
+			model.layers[1].trainable = True
+			for l in model.layers:
+				print l.name
+	
+			nb_epochs = np.power(10,(i+1))
+			sgd = SGD(lr=0.0001)
+			adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.00001)
 
 
-image = load_image(height_input, width_input, "0.png", color)
-image = np.expand_dims(image, axis=0)
-image = image / 255.
-prediction = model.predict_on_batch(image)
-prediction = prediction.argmax()
-print classes[prediction]
+			if h==0:
+				optimizer_ch = adam
+				loss = 'categorical_crossentropy'
+				folder = 'adam_cat'
+			elif h==1:
+				optimizer_ch = adam
+				loss = 'mean_squared_error'
+				folder = 'adam_mean'
+			elif h==2:
+				optimizer_ch = sgd
+				loss = 'categorical_crossentropy'
+				folder = 'sgd_cat'
+			elif h==3:
+				optimizer_ch = sgd
+				loss = 'mean_squared_error'
+				folder = 'sgd_mean'
+
+			model.compile(loss=loss, optimizer=optimizer_ch, metrics=['accuracy'])
+			model.fit(image2, y2, epochs=nb_epochs)
 
 
-for l in model.layers:
-	l.trainable = False
-model.layers[0].trainbale = True
+			"""
+			model.save('my_model_new.h5')
+	
+			model = load_model('my_model_new.h5',{"Proutlayer":Proutlayer})
+			'mean_squared_error'
+			'categorical_crossentropy'
+			"""	
+			get_3rd_layer_output = K.function([model.layers[0].input],[model.layers[3].output])
+			layer_output = get_3rd_layer_output([image2])[0]
+			layer_output = np.uint8(layer_output[0]*255)
+			layer_output = layer_output[:,:,::-1]
+			os.system('clear')
+	
+			cv2.imwrite('{}/1000l{}p/{}1.png'.format(folder,nb_epochs,j),layer_output)
 
-image2 = np.ones((1,50,50,3))
-y2 = np.zeros((1,4))
-y2[0,1]= 1
-
-#
-print len(model.layers)
-model.layers[1].trainable = True
-for l in model.layers:
-	print l.name
-"""
-sgd = SGD(lr=0.001)
-adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.00)
-model.compile(loss='mean_squared_error', optimizer=sgd, metrics=['accuracy'])
-model.fit(image2, y2, epochs=1000)
-model.save('my_model2.h5')
-"""
-model = load_model('my_model2.h5',{"Proutlayer":Proutlayer})
-get_3rd_layer_output = K.function([model.layers[0].input],[model.layers[3].output])
-layer_output = get_3rd_layer_output([image2])[0]
-layer_output = np.uint8(layer_output[0]*255)
-print layer_output.shape
-cv2.imwrite('ISDIZ.png',layer_output)
 
 

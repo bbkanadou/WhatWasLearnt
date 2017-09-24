@@ -195,7 +195,6 @@ model.add(Activation('softmax'))
 adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.00001)
 model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['accuracy'])
 
-model.fit(X_train, Y_train, validation_split = val_split, batch_size=32, epochs=100)
-#server.launch(model)
-
-model.save('my_model.h5')
+for i in range(10):
+	model.fit(X_train, Y_train, validation_split = val_split, batch_size=32, epochs=1000)
+	model.save('my_model{}.h5'.format(i))
