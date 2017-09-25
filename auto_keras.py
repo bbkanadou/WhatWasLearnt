@@ -17,34 +17,7 @@ from keras import regularizers
 import h5py
 from keras import backend as K
 from keras.engine.topology import Layer
-
-class Proutlayer(Layer):
-
-    def __init__(self, **kwargs):
-        self.output_dim = 1
-        super(Proutlayer, self).__init__(**kwargs)
-
-    def build(self, input_shape):
-        # Create a trainable weight variable for this layer.
-	print "ok1"
-        self.output_dim = (50*50*3,)
-	print "ok1bis"
-        self.kernel = self.add_weight(name='kernel', 
-                                      shape=((50*50*3,)),
-                                      initializer='Ones',
-                                      trainable=False)
-	print "ok2"
-	print self.kernel
-        super(Proutlayer, self).build(input_shape)  # Be sure to call this somewhere!
-
-    def call(self, x):
-        return x*self.kernel
-
-    def trainable(self, talebool):
-	self.trainable=talebool
-
-    def compute_output_shape(self, input_shape):
-        return (input_shape[0], self.output_dim)
+import ones_layer
 
 height_input = 50 #height of the input image of the NN
 width_input = 50  #width  of the input image of the NN
@@ -166,11 +139,9 @@ X_train, test_set = X_train/255., test_set/255.
 print X_train.shape
 print Y_train.shape
 model = Sequential()
-# input: 100x100 images with 3 channels -> (3, 100, 100) tensors.
-# this applies 32 convolution filters of size 3x3 each.
-#model.add(Convolution2D(32, 3, 3, border_mode='valid', input_shape=(height_input, width_input,depth)))
+
 model.add(Flatten(input_shape=(height_input, width_input,depth)))
-model.add(Proutlayer(input_shape=(height_input, width_input,depth)))
+model.add(ones_layer.Ones(input_shape=(height_input, width_input,depth)))
 model.add(Activation('relu'))
 model.add(Reshape((height_input, width_input,depth)))
 
@@ -196,6 +167,5 @@ adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.00001)
 sgd = SGD(lr=0.001)#-1000*0.0000001, decay=0.0000001)
 model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
 
-for i in range(10):
-	model.fit(X_train, Y_train, validation_split = val_split, batch_size=32, epochs=1000)
-	model.save('my_model_sgd{}.h5'.format(i))
+model.fit(X_train, Y_train, validation_split = val_split, batch_size=32, epochs=10000)
+model.save('my_model_sgd{}.h5'.format(i))

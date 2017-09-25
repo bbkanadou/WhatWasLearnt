@@ -16,33 +16,6 @@ from keras.optimizers import Adam, SGD
 from keras import regularizers
 import h5py
 import ones_layer
-from keras import backend as K
-from keras.engine.topology import Layer
-"""
-class Proutlayer(Layer):
-
-    def __init__(self, **kwargs):
-        self.output_dim = 1
-        super(Proutlayer, self).__init__(**kwargs)
-
-    def build(self, input_shape):
-        # Create a trainable weight variable for this layer.
-        self.output_dim = (50*50*3,)
-        self.kernel = self.add_weight(name='kernel', 
-                                      shape=((50*50*3,)),
-                                      initializer='Ones',
-                                      trainable=True)
-        super(Proutlayer, self).build(input_shape)  # Be sure to call this somewhere!
-
-    def call(self, x):
-        return x*self.kernel
-
-    def trainable(self, talebool):
-	self.trainable=talebool
-
-    def compute_output_shape(self, input_shape):
-        return (input_shape[0], self.output_dim)
-"""
 
 height_input = 50 #height of the input image of the NN
 width_input = 50  #width  of the input image of the NN
@@ -74,7 +47,7 @@ classes = np.load("variable_names.npy")
 h=3
 for i in range(4):
 	for j in range(10):
-		model = load_model('my_model{}.h5'.format(j),{"Proutlayer":ones_layer.Proutlayer})
+		model = load_model('my_model{}.h5'.format(j),{"Ones":ones_layer.Ones})
 
 		"""
 		image = load_image(height_input, width_input, "0.png", color)
@@ -124,14 +97,7 @@ for i in range(4):
 		model.compile(loss=loss, optimizer=optimizer_ch, metrics=['accuracy'])
 		model.fit(image2, y2, epochs=nb_epochs)
 
-
-		"""
-		model.save('my_model_new.h5')
-
-		model = load_model('my_model_new.h5',{"Proutlayer":Proutlayer})
-		'mean_squared_error'
-		'categorical_crossentropy'
-		"""	
+	
 		get_3rd_layer_output = K.function([model.layers[0].input],[model.layers[3].output])
 		layer_output = get_3rd_layer_output([image2])[0]
 		layer_output = np.uint8(layer_output[0]*255)
