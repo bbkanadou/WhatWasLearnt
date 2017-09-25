@@ -17,6 +17,7 @@ from keras import regularizers
 import h5py
 import ones_layer
 
+model_to_load = 'my_model.h5'
 height_input = 50 #height of the input image of the NN
 width_input = 50  #width  of the input image of the NN
 color = True   #True means images will be used as bgr, False as grayscale
@@ -45,63 +46,61 @@ def load_image(height, width, picture, color):
 # identical to the previous one
 classes = np.load("variable_names.npy")
 h=3
-for i in range(4):
-	for j in range(10):
-		model = load_model('my_model{}.h5'.format(j),{"Ones":ones_layer.Ones})
+model = load_model(mode_to_load,{"Ones":ones_layer.Ones})
 
-		"""
-		image = load_image(height_input, width_input, "0.png", color)
-		image = np.expand_dims(image, axis=0)
-		image = image / 255.
-		prediction = model.predict_on_batch(image)
-		prediction = prediction.argmax()
-		print classes[prediction]
-		"""
+"""
+image = load_image(height_input, width_input, "0.png", color)
+image = np.expand_dims(image, axis=0)
+image = image / 255.
+prediction = model.predict_on_batch(image)
+prediction = prediction.argmax()
+print classes[prediction]
+"""
 
-		for l in model.layers:
-			l.trainable = False
-		model.layers[0].trainbale = True
+for l in model.layers:
+	l.trainable = False
+model.layers[0].trainbale = True
 
-		image2 = np.ones((1,50,50,3))
-		y2 = np.zeros((1,4))
-		y2[0,1]= 1
+image2 = np.ones((1,50,50,3))
+y2 = np.zeros((1,4))
+y2[0,1]= 1
 
-		#
-		print len(model.layers)
-		model.layers[1].trainable = True
-		for l in model.layers:
-			print l.name
+#
+print len(model.layers)
+model.layers[1].trainable = True
+for l in model.layers:
+	print l.name
 
-		nb_epochs = np.power(10,(i+1))
-		sgd = SGD(lr=0.0001, decay=0.0)
-		adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.00001)
+nb_epochs = np.power(10,(i+1))
+sgd = SGD(lr=0.0001, decay=0.0)
+adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.00001)
 
 
-		if h==0:
-			optimizer_ch = adam
-			loss = 'categorical_crossentropy'
-			folder = 'adam_cat'
-		elif h==1:
-			optimizer_ch = adam
-			loss = 'mean_squared_error'
-			folder = 'adam_mean'
-		elif h==2:
-			optimizer_ch = sgd
-			loss = 'categorical_crossentropy'
-			folder = 'sgd_cat'
-		elif h==3:
-			optimizer_ch = sgd
-			loss = 'mean_squared_error'
-			folder = 'sgd_mean'
+if h==0:
+	optimizer_ch = adam
+	loss = 'categorical_crossentropy'
+	folder = 'adam_cat'
+elif h==1:
+	optimizer_ch = adam
+	loss = 'mean_squared_error'
+	folder = 'adam_mean'
+elif h==2:
+	optimizer_ch = sgd
+	loss = 'categorical_crossentropy'
+	folder = 'sgd_cat'
+elif h==3:
+	optimizer_ch = sgd
+	loss = 'mean_squared_error'
+	folder = 'sgd_mean'
 
-		model.compile(loss=loss, optimizer=optimizer_ch, metrics=['accuracy'])
-		model.fit(image2, y2, epochs=nb_epochs)
+model.compile(loss=loss, optimizer=optimizer_ch, metrics=['accuracy'])
+model.fit(image2, y2, epochs=nb_epochs)
 
-		get_3rd_layer_output = K.function([model.layers[0].input],[model.layers[3].output])
-		layer_output = get_3rd_layer_output([image2])[0]
-		layer_output = np.uint8(layer_output[0]*255)
-		layer_output = layer_output[:,:,::-1]
-		#cv2.imwrite('{}/1000l{}p/{}1.png'.format(folder,nb_epochs,j),layer_output)
-		cv2.imwrite('sgdl/1000l{}p/{}1.png'.format(nb_epochs,j),layer_output)
+get_3rd_layer_output = K.function([model.layers[0].input],[model.layers[3].output])
+layer_output = get_3rd_layer_output([image2])[0]
+layer_output = np.uint8(layer_output[0]*255)
+layer_output = layer_output[:,:,::-1]
+#cv2.imwrite('{}/1000l{}p/{}1.png'.format(folder,nb_epochs,j),layer_output)
+cv2.imwrite('sgdl/1000l{}p/{}1.png'.format(nb_epochs,j),layer_output)
 
 
