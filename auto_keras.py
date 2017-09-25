@@ -12,7 +12,7 @@ from keras.layers.convolutional import Conv2D
 #from keras.layers.convolutional import Conv2D
 from keras.layers.pooling import MaxPooling2D
 #Convolution2D, MaxPooling2D, 
-from keras.optimizers import Adam
+from keras.optimizers import Adam, SGD
 from keras import regularizers
 import h5py
 from keras import backend as K
@@ -193,8 +193,9 @@ model.add(Dense(Y_train.shape[1]))
 model.add(Activation('softmax'))
 
 adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.00001)
-model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['accuracy'])
+sgd = SGD(lr=0.001)#-1000*0.0000001, decay=0.0000001)
+model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
 
 for i in range(10):
 	model.fit(X_train, Y_train, validation_split = val_split, batch_size=32, epochs=1000)
-	model.save('my_model{}.h5'.format(i))
+	model.save('my_model_sgd{}.h5'.format(i))
